@@ -1,0 +1,81 @@
+package selenium_Possible_Tests;
+
+import java.time.Duration;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.Test;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FitPeoAutomation {
+    
+	@Test
+	public void fitPeo() {
+    	
+		WebDriver driver = new ChromeDriver();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+ 
+        try {
+            // 1. Navigate to the FitPeo Homepage
+            driver.get("https://fitpeo.com"); 
+            driver.manage().window().maximize();
+ 
+            // 2. Navigate to the Revenue Calculator Page
+                WebElement revenueCalculatorLink = wait.until(
+                ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space(text())='Revenue Calculator']")));
+                revenueCalculatorLink.click();
+ 
+            // 3. Scroll Down to the Slider Section
+            WebElement sliderSection = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(@class,'MuiSlider-thumb MuiSlider-thumbSizeMedium')]")));
+            Actions actions = new Actions(driver);
+            actions.moveToElement(sliderSection).perform();
+ 
+            // 4. Adjust the Slider
+            WebElement slider = driver.findElement(By.xpath("//span[contains(@class,'MuiSlider-thumb MuiSlider-thumbSizeMedium')]")); 
+            actions.dragAndDropBy(slider, 820, 0).perform(); // Adjust value to 820
+            WebElement sliderValueField = driver.findElement(By.xpath("//input[contains(@class,'MuiInputBase-input MuiOutlinedInput-input')]")); 
+            if (!sliderValueField.getAttribute("value").equals("820")) {
+                throw new AssertionError("Slider value did not update to 820!");
+            }
+ 
+            // 5. Update the Text Field
+             WebElement textField = driver.findElement(By.xpath("//input[contains(@class,'MuiInputBase-input MuiOutlinedInput-input')]")); 
+            textField.clear();
+            textField.sendKeys("560");
+ 
+            // 6. Validate Slider Value
+            if (!slider.getAttribute("value").equals("560")) {
+                throw new AssertionError("Slider value did not update to 560!");
+            }
+ 
+            // 7. Select CPT Codes
+            String[] cptCodes = {"CPT-99091", "CPT-99453", "CPT-99454", "CPT-99474"};
+            for (String code : cptCodes) {
+                WebElement checkBox = driver.findElement(By.xpath("//label[text()='" + code + "']/preceding-sibling::input"));
+                if (!checkBox.isSelected()) {
+            checkBox.click();
+                }
+            }
+ 
+            // 8. Validate Total Recurring Reimbursement
+            WebElement totalRecurringField = driver.findElement(By.xpath("//p[text()='Total Recurring Reimbursement for all Patients Per Month']/following-sibling::p"));
+            if (!totalRecurringField.getText().equals("$110700")) {
+                throw new AssertionError("Total Recurring Reimbursement did not match expected value!");
+            }
+ 
+            System.out.println("All test cases passed!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            
+            driver.quit();
+        }
+    }
+}
